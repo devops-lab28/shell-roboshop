@@ -3,7 +3,7 @@
 SG_ID="sg-05ef51454ebbf03b8"
 AMI_ID="ami-0220d79f3f480ecf5"
 
-echo "Launching EC2 instance..."
+# echo "Launching EC2 instance..."
 
 for instance in $@
 do
@@ -14,7 +14,7 @@ do
     --instance-type "t3.micro" \
     --security-group-ids $SG_ID \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$instance}]" \
-    --query 'Instances[0].PrivateIpAddress' \
+    --query 'Instances[0].InstanceId' \
     --output text )
 
     if [ $instance == "frontend" ]; then
