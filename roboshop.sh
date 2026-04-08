@@ -2,8 +2,10 @@
 
 SG_ID="sg-05ef51454ebbf03b8"
 AMI_ID="ami-0220d79f3f480ecf5"
+ZONE_ID="Z08570651LWZ78D2V5UW7"
+DOMAIN_NAME="devops-lab.online"
 
-# echo "Launching EC2 instance..."
+echo "Launching EC2 instance..."
 
 for instance in $@
 do
@@ -24,6 +26,7 @@ do
             --query 'Reservations[].Instances[].PublicIpAddress' \
             --output text
         )
+        RECORD_NAME="$DOMAIN_NAME"
     else
         IP=$(
             aws ec2 describe-instances \
@@ -31,9 +34,36 @@ do
             --query 'Reservations[].Instances[].PrivateIpAddress' \
             --output text
         )
+        RECORD_NAME="$instance.$DOMAIN_NAME"
     fi
 
-    echo "$instance launched with IP: $IP"
+    echo "$instance launched with IP address: $IP"
+
+    aws route53 change-resource-record-sets \
+    --hosted-zone-id $ZONE_ID \
+    --change-batch '
+    {
+        "Comment": "Updating A record",
+        "Changes": [
+            {
+            "Action": "UPSERT",
+            "ResourceRecordSet": {
+                "Name": "'$RECORD_NAME'",
+                "Type": "A",
+                "TTL": 1,
+                "ResourceRecords": [
+                {
+                    "Value": "'$IP'"
+                }
+                ]
+            }
+            }
+        ]
+        }
+        '
+
+        echo "DNS record for $instance updated with IP: $IP"
+
 done
 
 # 
