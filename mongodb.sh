@@ -41,3 +41,5 @@ VALIDATE $? "Allowing MongoDB to listen on all interfaces (allowing remote conne
 
 systemctl restart mongod &>> $LOGS_FILE
 VALIDATE $? "Restarting MongoDB service"
+
+echo -e "$G MongoDB setup completed successfully $N" | tee -a $LOGS_FILE
